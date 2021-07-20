@@ -22,8 +22,8 @@ import de.nielsfalk.ktor.swagger.version.shared.ResponseBase
 import de.nielsfalk.ktor.swagger.version.shared.ResponseCreator
 import de.nielsfalk.ktor.swagger.version.shared.Tag
 import de.nielsfalk.ktor.swagger.version.v3.Example
-import io.ktor.client.call.TypeInfo
 import io.ktor.http.HttpStatusCode
+import io.ktor.util.reflect.TypeInfo
 
 typealias Definitions = MutableMap<ModelName, Any>
 

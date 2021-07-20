@@ -12,7 +12,6 @@ import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.ApplicationFeature
 import io.ktor.application.call
-import io.ktor.client.call.TypeInfo
 import io.ktor.client.call.typeInfo
 import io.ktor.http.HttpMethod
 import io.ktor.locations.Location
@@ -22,6 +21,7 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.util.AttributeKey
 import io.ktor.util.pipeline.PipelineContext
+import io.ktor.util.reflect.TypeInfo
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties

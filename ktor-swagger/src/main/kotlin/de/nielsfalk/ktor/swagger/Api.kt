@@ -4,7 +4,6 @@ import de.nielsfalk.ktor.swagger.version.shared.ModelName
 import de.nielsfalk.ktor.swagger.version.v3.Example
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
-import io.ktor.client.call.TypeInfo
 import io.ktor.client.call.typeInfo
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
@@ -25,6 +24,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.application
 import io.ktor.util.pipeline.ContextDsl
 import io.ktor.util.pipeline.PipelineContext
+import io.ktor.util.reflect.TypeInfo
 import kotlin.reflect.KClass
 
 data class Metadata(

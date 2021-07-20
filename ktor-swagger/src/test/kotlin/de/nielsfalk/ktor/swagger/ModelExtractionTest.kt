@@ -3,13 +3,17 @@ package de.nielsfalk.ktor.swagger
 import com.winterbe.expekt.should
 import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.v2.Parameter
-import io.ktor.client.call.TypeInfo
-import io.ktor.client.call.typeInfo
+import io.ktor.util.reflect.TypeInfo
+import io.ktor.util.reflect.typeInfo
+import junit.framework.Assert.assertEquals
 import org.junit.Test
 import java.time.Instant
 import java.time.LocalDate
+import kotlin.reflect.full.defaultType
 import kotlin.reflect.full.memberProperties
-import kotlin.test.assertEquals
+import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.javaType
+import kotlin.reflect.typeOf
 import de.nielsfalk.ktor.swagger.version.v3.Parameter as ParameterV3
 
 class ModelExtractionTest {
@@ -398,6 +402,7 @@ class ModelExtractionTest {
 
     class TwoGenerics<J, K>(val jValue: J, val kValue: K)
 
+    @ExperimentalStdlibApi
     @Test
     fun `two generics passed to object`() {
         val typeInfo = typeInfo<TwoGenerics<Int, String>>()
@@ -406,7 +411,7 @@ class ModelExtractionTest {
         val jValueType = properties.find { it.name == "jValue" }!!.returnTypeInfo(typeInfo.reifiedType)
         val kValueType = properties.find { it.name == "kValue" }!!.returnTypeInfo(typeInfo.reifiedType)
 
-        assertEqualTypeInfo(typeInfo<Int>(), jValueType)
+        assertEqualTypeInfo(SwaggerTypeInfo(Int::class, java.lang.Integer::class.java), jValueType)
         assertEqualTypeInfo(typeInfo<String>(), kValueType)
     }
 }

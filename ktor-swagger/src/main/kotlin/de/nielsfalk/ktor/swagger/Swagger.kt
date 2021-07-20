@@ -18,7 +18,7 @@ import de.nielsfalk.ktor.swagger.version.v3.Schema
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.feature
-import io.ktor.client.call.TypeInfo
+import io.ktor.util.reflect.TypeInfo
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
@@ -34,6 +34,8 @@ import kotlin.reflect.KTypeParameter
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
+
+data class SwaggerTypeInfo(override val type: KClass<*>, override val reifiedType: io.ktor.util.reflect.Type, override val kotlinType: KType? = null) : TypeInfo
 
 /**
  * Gets the [Application.swaggerUi] feature
@@ -209,8 +211,8 @@ internal class SpecVariation(
                 ) to emptyTypeInfoList
             } else {
                 val typeInfo = when (reifiedType) {
-                    is ParameterizedType -> TypeInfo(this, reifiedType)
-                    else -> TypeInfo(this, this.java)
+                    is ParameterizedType -> SwaggerTypeInfo(this, reifiedType)
+                    else -> SwaggerTypeInfo(this, this.java)
                 }
                 typeInfo.referenceProperty() to listOf(typeInfo)
             }
@@ -218,9 +220,8 @@ internal class SpecVariation(
 
     fun createModelData(typeInfo: TypeInfo): ModelDataWithDiscoveredTypeInfo {
         return if (typeInfo.type.isSubclassOf(Collection::class)) {
-            val subType = (typeInfo.reifiedType as ParameterizedType).actualTypeArguments.first() as WildcardType
-            val concreteType = subType.upperBounds[0]
-            val subTypeInfo = TypeInfo(concreteType.rawKotlinKClass(), concreteType)
+            val concreteType = (typeInfo.reifiedType as ParameterizedType).actualTypeArguments.first()
+            val subTypeInfo = SwaggerTypeInfo(concreteType.rawKotlinKClass(), concreteType)
             val uniqueItems = typeInfo.type.isSubclassOf(Set::class)
             ArrayModel(subTypeInfo.referenceProperty(), uniqueItems) to listOf(subTypeInfo)
         } else {
@@ -290,10 +291,10 @@ internal fun KType.resolveTypeInfo(reifiedType: Type?): TypeInfo? {
             val typeNameToLookup = classifierLocal.name
             val reifiedClass = (reifiedType as ParameterizedType).typeForName(typeNameToLookup)
             val kotlinType = reifiedClass.rawKotlinKClass()
-            return TypeInfo(kotlinType, reifiedClass)
+            return SwaggerTypeInfo(kotlinType, reifiedClass)
         }
         is KClass<*> -> {
-            this.parameterize(reifiedType)?.let { TypeInfo(classifierLocal, it) }
+            this.parameterize(reifiedType)?.let { SwaggerTypeInfo(classifierLocal, it) }
         }
         else -> unsuportedType(classifierLocal)
     }
@@ -340,7 +341,7 @@ internal fun TypeInfo.modelName(): ModelName {
                              * The type is parameterized, create a TypeInfo for it and recurse to get the
                              * model name again.
                              */
-                            TypeInfo((it.rawType as Class<*>).kotlin, it).modelName()
+                            SwaggerTypeInfo((it.rawType as Class<*>).kotlin, it).modelName()
                         }
                         is WildcardType -> {
                             (it.upperBounds.first() as Class<*>).kotlin.modelName()
