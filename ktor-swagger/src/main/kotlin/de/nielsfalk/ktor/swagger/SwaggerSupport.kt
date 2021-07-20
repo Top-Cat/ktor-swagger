@@ -67,6 +67,9 @@ class SwaggerSupport(
                 get("/$path") {
                     redirect(path, defaultJsonFile)
                 }
+                get("/$path/") {
+                    redirect(path, defaultJsonFile)
+                }
                 val ui = if (provideUi) SwaggerUi() else null
                 get("/$path/{fileName}") {
                     val filename = call.parameters["fileName"]

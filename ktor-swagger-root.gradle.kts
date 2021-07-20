@@ -1,9 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.Coroutines
-
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
         maven {
             setUrl("https://plugins.gradle.org/m2/")
         }
@@ -14,8 +11,7 @@ buildscript {
 }
 plugins {
     // https://github.com/diffplug/spotless/tree/master/plugin-gradle
-    id("com.diffplug.gradle.spotless") version "3.10.0"
-    id("com.jfrog.bintray") version "1.8.2"
+    id("com.diffplug.gradle.spotless") version "4.5.1"
     jacoco
     `maven-publish`
 }
@@ -32,17 +28,15 @@ allprojects {
         plugin("com.diffplug.gradle.spotless")
     }
     group = "de.nielsfalk.ktor"
-    version = "0.7.0"
+    version = System.getenv("BUILD_NUMBER")?.let { "0.7.${it}" } ?: "0.7.0"
 
     repositories {
         mavenCentral()
-        jcenter()
-        maven { setUrl("https://dl.bintray.com/kotlin/ktor") }
     }
 }
 
 fun DependencyHandler.ktor(name: String) =
-    create(group = "io.ktor", name = name, version = "1.3.2")
+    create(group = "io.ktor", name = name, version = "1.5.0")
 
 subprojects {
     apply {
@@ -67,16 +61,6 @@ subprojects {
             ktlint(Versions.KTLINT)
             trimTrailingWhitespace()
             endWithNewline()
-        }
-    }
-
-    tasks.withType<Test> {
-        extensions.configure(typeOf<JacocoTaskExtension>()) {
-            /*
-             * Fix for Jacoco breaking Build Cache support.
-             * https://github.com/gradle/gradle/issues/5269
-             */
-            isAppend = false
         }
     }
 
@@ -132,12 +116,11 @@ allprojects {
 }
 
 project(":ktor-swagger") {
-    apply(plugin = "com.jfrog.bintray")
     apply(plugin = "maven-publish")
 
     val sourceJarTask = task<Jar>("sourceJar") {
         from(java.sourceSets["main"].allSource)
-        classifier = "sources"
+        archiveClassifier.set("sources")
     }
 
     val publicationName = "publication-$name"
@@ -150,21 +133,15 @@ project(":ktor-swagger") {
                 artifact(sourceJarTask)
             }
         }
-    }
-
-    bintray {
-        user = properties["bintray.publish.user"].toString()
-        key = properties["bintray.publish.key"].toString()
-        setPublications(publicationName)
-        with(pkg) {
-            userOrg = "ktor-swagger"
-            repo = "maven-artifacts"
-            name = "ktor-swagger"
-            publish = true
-            setLicenses("Apache-2.0")
-            setLabels("ktor", "kotlin", "web server", "swagger")
-            vcsUrl = "https://github.com/nielsfalk/ktor-swagger.git"
-            githubRepo = "https://github.com/nielsfalk/ktor-swagger"
+        repositories {
+            maven {
+                name = "reposilite"
+                credentials {
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
+                }
+                url = uri("https://artifactory.kirkstall.top-cat.me/")
+            }
         }
     }
 }
@@ -193,5 +170,5 @@ fun Project.`kotlin`(configure: org.jetbrains.kotlin.gradle.dsl.KotlinJvmProject
 /**
  * Retrieves the [java][org.gradle.api.plugins.JavaPluginConvention] project convention.
  */
-val Project.`java`: org.gradle.api.plugins.JavaPluginConvention
+val Project.`java`: JavaPluginConvention
     get() = convention.getPluginByName("java")
