@@ -206,7 +206,7 @@ internal class SpecVariation(
             } else if (java.isEnum) {
                 val enumConstants = (this).java.enumConstants
                 Property(
-                    enum = enumConstants.map { (it as Enum<*>).name },
+                    enum = enumConstants.map { (it as Enum<*>).name.replace("_", "") },
                     type = "string"
                 ) to emptyTypeInfoList
             } else {
