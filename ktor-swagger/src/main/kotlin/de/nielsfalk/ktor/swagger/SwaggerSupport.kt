@@ -8,20 +8,20 @@ import de.nielsfalk.ktor.swagger.version.shared.ParameterBase
 import de.nielsfalk.ktor.swagger.version.shared.ParameterInputType
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
-import io.ktor.application.ApplicationFeature
-import io.ktor.application.call
-import io.ktor.client.call.typeInfo
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
 import io.ktor.http.HttpMethod
-import io.ktor.locations.Location
-import io.ktor.response.respond
-import io.ktor.response.respondRedirect
-import io.ktor.routing.get
-import io.ktor.routing.routing
+import io.ktor.server.application.BaseApplicationPlugin
+import io.ktor.server.locations.Location
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondRedirect
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
 import io.ktor.util.AttributeKey
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.reflect.TypeInfo
+import io.ktor.util.reflect.typeInfo
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
@@ -38,7 +38,7 @@ class SwaggerSupport(
     val openApi: OpenApi?,
     val openApiCustomization: Metadata.(HttpMethod) -> Metadata
 ) {
-    companion object Feature : ApplicationFeature<Application, SwaggerUiConfiguration, SwaggerSupport> {
+    companion object Feature : BaseApplicationPlugin<Application, SwaggerUiConfiguration, SwaggerSupport> {
         private val openApiJsonFileName = "openapi.json"
         private val swaggerJsonFileName = "swagger.json"
 

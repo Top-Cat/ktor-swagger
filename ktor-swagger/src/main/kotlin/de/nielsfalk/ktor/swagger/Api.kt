@@ -2,9 +2,8 @@ package de.nielsfalk.ktor.swagger
 
 import de.nielsfalk.ktor.swagger.version.shared.ModelName
 import de.nielsfalk.ktor.swagger.version.v3.Example
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.client.call.typeInfo
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -14,17 +13,18 @@ import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.locations.delete
-import io.ktor.locations.get
-import io.ktor.locations.patch
-import io.ktor.locations.post
-import io.ktor.locations.put
-import io.ktor.request.receive
-import io.ktor.routing.Route
-import io.ktor.routing.application
-import io.ktor.util.pipeline.ContextDsl
+import io.ktor.server.locations.patch
+import io.ktor.server.locations.put
+import io.ktor.server.locations.delete
+import io.ktor.server.locations.get
+import io.ktor.server.locations.post
+import io.ktor.server.request.receive
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.application
+import io.ktor.util.KtorDsl
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.reflect.TypeInfo
+import io.ktor.util.reflect.typeInfo
 import kotlin.reflect.KClass
 
 data class Metadata(
@@ -266,7 +266,7 @@ operator fun HttpStatusCode.invoke(vararg responses: ResponseType = arrayOf(), d
 fun contentTypeResponse(contentType: ContentType): ResponseType =
     CustomContentTypeResponse(contentType)
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.post(
     metadata: Metadata,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, ENTITY) -> Unit
@@ -280,7 +280,7 @@ inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.post(
     }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.patch(
     metadata: Metadata,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, ENTITY) -> Unit
@@ -294,7 +294,7 @@ inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.patch(
     }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.put(
     metadata: Metadata,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, ENTITY) -> Unit
@@ -307,7 +307,7 @@ inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.put(
     }
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Any> Route.get(
     metadata: Metadata,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION) -> Unit
@@ -318,7 +318,7 @@ inline fun <reified LOCATION : Any> Route.get(
     return get(body)
 }
 
-@ContextDsl
+@KtorDsl
 inline fun <reified LOCATION : Any> Route.delete(
     metadata: Metadata,
     noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION) -> Unit

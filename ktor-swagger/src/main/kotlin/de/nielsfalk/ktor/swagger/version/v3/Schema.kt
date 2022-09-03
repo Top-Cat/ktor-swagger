@@ -20,9 +20,9 @@ import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.shared.ResponseBase
 import de.nielsfalk.ktor.swagger.version.shared.ResponseCreator
 import de.nielsfalk.ktor.swagger.version.shared.Tag
-import io.ktor.client.call.TypeInfo
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.util.reflect.TypeInfo
 
 typealias Schemas = MutableMap<String, Any>
 typealias Responses = MutableMap<String, Any>

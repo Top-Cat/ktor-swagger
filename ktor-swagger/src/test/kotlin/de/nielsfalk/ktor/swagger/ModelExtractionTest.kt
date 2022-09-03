@@ -9,11 +9,7 @@ import junit.framework.Assert.assertEquals
 import org.junit.Test
 import java.time.Instant
 import java.time.LocalDate
-import kotlin.reflect.full.defaultType
 import kotlin.reflect.full.memberProperties
-import kotlin.reflect.full.starProjectedType
-import kotlin.reflect.javaType
-import kotlin.reflect.typeOf
 import de.nielsfalk.ktor.swagger.version.v3.Parameter as ParameterV3
 
 class ModelExtractionTest {

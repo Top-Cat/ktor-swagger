@@ -2,11 +2,9 @@ package de.nielsfalk.ktor.swagger
 
 import com.winterbe.expekt.should
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
-import io.ktor.application.install
 import io.ktor.http.ContentType
-import io.ktor.locations.Locations
-import io.ktor.routing.routing
-import io.ktor.server.testing.withTestApplication
+import io.ktor.server.locations.Locations
+import io.ktor.server.testing.testApplication
 import org.junit.Before
 import org.junit.Test
 
@@ -15,51 +13,50 @@ class SecurityTest {
 
     @Before
     fun setUp() {
-        withTestApplication({
+        testApplication {
             install(Locations)
             install(SwaggerSupport) {
                 openApi = OpenApi().apply {
                     this.security = listOf(mapOf("basic" to listOf()))
                     components.securitySchemes["basic"] = mapOf(
-                            "type" to "http",
-                            "scheme" to "basic"
+                        "type" to "http",
+                        "scheme" to "basic"
                     )
                     components.securitySchemes["basic2"] = mapOf(
-                            "type" to "http",
-                            "scheme" to "basic"
+                        "type" to "http",
+                        "scheme" to "basic"
                     )
                 }
                 openApiCustomization = {
                     responds(
-                            internalServerError<ErrorModel>()
+                        internalServerError<ErrorModel>()
                     )
                 }
             }
-        }) {
-            // when:
-            application.routing {
+
+            routing {
                 get<toy>(
-                        "image"
-                                .description("A single toy, also returns image of toy for correct mime type")
-                                .responds(
-                                        ok(
-                                                json<ToyModel>(),
-                                                contentTypeResponse(ContentType.Image.PNG),
-                                                description = ""
-                                        )
-                                )
+                    "image"
+                        .description("A single toy, also returns image of toy for correct mime type")
+                        .responds(
+                            ok(
+                                json<ToyModel>(),
+                                contentTypeResponse(ContentType.Image.PNG),
+                                description = ""
+                            )
+                        )
                 ) {
                 }
                 get<toys>(
-                        "all"
-                                .responds(
-                                        ok<ToysModel>(example("model", ToysModel.example)),
-                                        notFound()
-                                ).security(mapOf("basic2" to emptyList()))
+                    "all"
+                        .responds(
+                            ok<ToysModel>(example("model", ToysModel.example)),
+                            notFound()
+                        ).security(mapOf("basic2" to emptyList()))
                 ) { }
-            }
 
-            this@SecurityTest.openapi = application.swaggerUi.openApi!!
+                this@SecurityTest.openapi = application.swaggerUi.openApi!!
+            }
         }
     }
 

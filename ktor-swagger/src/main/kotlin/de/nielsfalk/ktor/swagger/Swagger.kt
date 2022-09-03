@@ -15,9 +15,9 @@ import de.nielsfalk.ktor.swagger.version.shared.PropertyName
 import de.nielsfalk.ktor.swagger.version.shared.ResponseCreator
 import de.nielsfalk.ktor.swagger.version.shared.Tag
 import de.nielsfalk.ktor.swagger.version.v3.Schema
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
-import io.ktor.application.feature
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.plugin
 import io.ktor.util.reflect.TypeInfo
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -35,7 +35,7 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 
-data class SwaggerTypeInfo(override val type: KClass<*>, override val reifiedType: io.ktor.util.reflect.Type, override val kotlinType: KType? = null) : TypeInfo
+typealias SwaggerTypeInfo = TypeInfo
 
 /**
  * Gets the [Application.swaggerUi] feature
@@ -45,7 +45,7 @@ val ApplicationCall.swaggerUi get() = application.swaggerUi
 /**
  * Gets the [Application.swaggerUi] feature
  */
-val Application.swaggerUi get() = feature(SwaggerSupport)
+val Application.swaggerUi get() = plugin(SwaggerSupport)
 
 fun Group.toList(): List<Tag> {
     return listOf(Tag(name))

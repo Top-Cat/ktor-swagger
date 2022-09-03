@@ -8,11 +8,11 @@ import de.nielsfalk.ktor.swagger.version.shared.ParameterInputType
 import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
-import io.ktor.application.install
+import io.ktor.server.application.install
 import io.ktor.http.ContentType
-import io.ktor.locations.Location
-import io.ktor.locations.Locations
-import io.ktor.routing.routing
+import io.ktor.server.locations.Location
+import io.ktor.server.locations.Locations
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.withTestApplication
 import org.junit.Before
 import org.junit.Test

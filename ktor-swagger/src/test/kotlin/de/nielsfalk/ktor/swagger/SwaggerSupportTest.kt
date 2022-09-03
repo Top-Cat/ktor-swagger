@@ -2,14 +2,14 @@ package de.nielsfalk.ktor.swagger
 
 import com.winterbe.expekt.should
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
-import io.ktor.gson.GsonConverter
+import io.ktor.server.application.install
+import io.ktor.serialization.gson.GsonConverter
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
-import io.ktor.locations.Location
-import io.ktor.locations.Locations
-import io.ktor.routing.routing
+import io.ktor.server.locations.Location
+import io.ktor.server.locations.Locations
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import org.junit.Test

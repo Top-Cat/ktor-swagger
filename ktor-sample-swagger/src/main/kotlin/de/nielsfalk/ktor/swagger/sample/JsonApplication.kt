@@ -24,27 +24,27 @@ import de.nielsfalk.ktor.swagger.version.shared.Information
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
 import de.nielsfalk.ktor.swagger.version.v3.Schema
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.CallLogging
-import io.ktor.features.Compression
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.gson.gson
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
+import io.ktor.server.application.install
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode.Companion.Created
-import io.ktor.locations.Location
-import io.ktor.locations.Locations
-import io.ktor.response.respond
-import io.ktor.response.respondText
-import io.ktor.routing.routing
+import io.ktor.serialization.gson.gson
+import io.ktor.server.locations.Location
+import io.ktor.server.locations.Locations
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.compression.Compression
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.util.StringValues
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.toMap
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 
 data class PetModel(val id: Int?, val name: String) {
     companion object {

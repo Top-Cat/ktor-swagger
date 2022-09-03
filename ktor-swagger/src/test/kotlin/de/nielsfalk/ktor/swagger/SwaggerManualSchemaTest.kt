@@ -5,13 +5,13 @@ import de.nielsfalk.ktor.swagger.version.shared.ModelOrModelReference
 import de.nielsfalk.ktor.swagger.version.shared.ParameterInputType
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
-import io.ktor.application.install
-import io.ktor.locations.Location
-import io.ktor.locations.Locations
-import io.ktor.routing.Routing
-import io.ktor.routing.routing
+import io.ktor.server.application.install
+import io.ktor.server.locations.Location
+import io.ktor.server.locations.Locations
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.withTestApplication
-import io.ktor.util.pipeline.ContextDsl
+import io.ktor.util.KtorDsl
 import org.junit.Test
 import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
 import de.nielsfalk.ktor.swagger.version.v2.Response as ResponseV2
@@ -61,7 +61,7 @@ class SwaggerManualSchemaTest {
     private lateinit var swagger: Swagger
     private lateinit var openApi: OpenApi
 
-    @ContextDsl
+    @KtorDsl
     private fun applicationCustomRoute(configuration: Routing.() -> Unit) {
         withTestApplication({
             install(Locations)

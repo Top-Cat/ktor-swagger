@@ -28,7 +28,7 @@ allprojects {
         plugin("com.diffplug.gradle.spotless")
     }
     group = "de.nielsfalk.ktor"
-    version = System.getenv("BUILD_NUMBER")?.let { "0.7.${it}" } ?: "0.7.0"
+    version = System.getenv("BUILD_NUMBER")?.let { "0.8.${it}" } ?: "0.8.0"
 
     repositories {
         mavenCentral()
@@ -36,7 +36,7 @@ allprojects {
 }
 
 fun DependencyHandler.ktor(name: String) =
-    create(group = "io.ktor", name = name, version = "1.6.4")
+    create(group = "io.ktor", name = name, version = "2.0.3")
 
 subprojects {
     apply {
@@ -48,11 +48,16 @@ subprojects {
     dependencies {
         "api"(kotlin(module = "stdlib", version = property("kotlin.version") as String))
         "api"(kotlin(module = "reflect", version = property("kotlin.version") as String))
-        "api"(ktor("ktor-locations"))
+        "api"(ktor("ktor-server-locations"))
         "api"(ktor("ktor-server-core"))
+        "api"(ktor("ktor-server-content-negotiation"))
+        "api"(ktor("ktor-server-default-headers"))
+        "api"(ktor("ktor-server-compression"))
+        "api"(ktor("ktor-server-call-logging"))
 
         "testImplementation"(ktor("ktor-server-test-host"))
-        "testImplementation"(ktor("ktor-gson"))
+        "testImplementation"(ktor("ktor-server-content-negotiation"))
+        "testImplementation"(ktor("ktor-serialization-gson"))
         "testImplementation"(group = "com.winterbe", name = "expekt", version = "0.5.0")
     }
 

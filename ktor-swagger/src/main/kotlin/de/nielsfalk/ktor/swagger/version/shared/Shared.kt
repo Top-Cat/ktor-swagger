@@ -5,7 +5,7 @@ import de.nielsfalk.ktor.swagger.Metadata
 import de.nielsfalk.ktor.swagger.toList
 import de.nielsfalk.ktor.swagger.version.v3.Example
 import io.ktor.http.HttpMethod
-import io.ktor.locations.Location
+import io.ktor.server.locations.Location
 
 typealias ModelName = String
 typealias PropertyName = String
