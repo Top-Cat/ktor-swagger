@@ -29,9 +29,8 @@ import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode.Companion.Created
+import io.ktor.resources.Resource
 import io.ktor.serialization.gson.gson
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.Locations
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.routing
@@ -45,6 +44,8 @@ import io.ktor.util.StringValues
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.toMap
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.resources.Resources
+import kotlinx.serialization.Serializable
 
 data class PetModel(val id: Int?, val name: String) {
     companion object {
@@ -96,21 +97,25 @@ val data = PetsModel(
 fun newId() = ((data.pets.map { it.id ?: 0 }.max()) ?: 0) + 1
 
 @Group("pet operations")
-@Location("/pets/{id}")
+@Resource("/pets/{id}")
+@Serializable
 class pet(val id: Int)
 
 @Group("pet operations")
-@Location("/pets")
+@Resource("/pets")
+@Serializable
 class pets
 
 @Group("generic operations")
-@Location("/genericPets")
+@Resource("/genericPets")
+@Serializable
 class genericPets
 
 const val petUuid = "petUuid"
 
 @Group("generic operations")
-@Location("/pet/custom/{id}")
+@Resource("/pet/custom/{id}")
+@Serializable
 class petCustomSchemaParam(
     @Schema(petUuid)
     val id: String
@@ -123,21 +128,25 @@ val petIdSchema = mapOf(
 )
 
 @Group("shape operations")
-@Location("/shapes")
+@Resource("/shapes")
+@Serializable
 class shapes
 
 @Group("debug")
-@Location("/request/info")
+@Resource("/request/info")
+@Serializable
 class requestInfo
 
 @Group("debug")
-@Location("/request/withHeader")
+@Resource("/request/withHeader")
+@Serializable
 class withHeader
 
 class Header(val optionalHeader: String?, val mandatoryHeader: Int)
 
 @Group("debug")
-@Location("/request/withQueryParameter")
+@Resource("/request/withQueryParameter")
+@Serializable
 class withQueryParameter
 
 class QueryParameter(val optionalParameter: String?, val mandatoryParameter: Int)
@@ -153,7 +162,7 @@ internal fun run(port: Int, wait: Boolean = true): ApplicationEngine {
                 setPrettyPrinting()
             }
         }
-        install(Locations)
+        install(Resources)
         install(SwaggerSupport) {
             forwardRoot = true
             val information = Information(

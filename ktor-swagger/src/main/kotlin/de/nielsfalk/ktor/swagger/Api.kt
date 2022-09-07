@@ -13,11 +13,11 @@ import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.server.locations.patch
-import io.ktor.server.locations.put
-import io.ktor.server.locations.delete
-import io.ktor.server.locations.get
-import io.ktor.server.locations.post
+import io.ktor.server.resources.patch
+import io.ktor.server.resources.put
+import io.ktor.server.resources.delete
+import io.ktor.server.resources.get
+import io.ktor.server.resources.post
 import io.ktor.server.request.receive
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.application

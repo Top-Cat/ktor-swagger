@@ -12,8 +12,8 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.http.HttpMethod
+import io.ktor.resources.Resource
 import io.ktor.server.application.BaseApplicationPlugin
-import io.ktor.server.locations.Location
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.get
@@ -186,7 +186,7 @@ private abstract class BaseWithVariation<B : CommonBase>(
         }
 
     fun <LOCATION : Any> Metadata.applyOperations(
-        location: Location,
+        location: Resource,
         group: Group?,
         method: HttpMethod,
         locationType: KClass<LOCATION>,
@@ -288,7 +288,7 @@ private abstract class BaseWithVariation<B : CommonBase>(
         requireMethodSupportsBody(method)
         val bodyType = createBodyType(bodyTypeInfo)
         val clazz = locationClass.java
-        val location = clazz.getAnnotation(Location::class.java)
+        val location = clazz.getAnnotation(Resource::class.java)
         val tags = clazz.getAnnotation(Group::class.java)
 
         applyOperations(location, tags, method, locationClass, bodyType)

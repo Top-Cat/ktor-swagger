@@ -5,13 +5,14 @@ import de.nielsfalk.ktor.swagger.version.shared.ModelOrModelReference
 import de.nielsfalk.ktor.swagger.version.shared.ParameterInputType
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
+import io.ktor.resources.Resource
 import io.ktor.server.application.install
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.Locations
+import io.ktor.server.resources.Resources
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorDsl
+import kotlinx.serialization.Serializable
 import org.junit.Test
 import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
 import de.nielsfalk.ktor.swagger.version.v2.Response as ResponseV2
@@ -21,7 +22,8 @@ import de.nielsfalk.ktor.swagger.version.v3.Response as ResponseV3
 
 const val rectanglesLocation = "/rectangles"
 
-@Location(rectanglesLocation)
+@Resource(rectanglesLocation)
+@Serializable
 class rectangles
 
 const val ref = "${'$'}ref"
@@ -64,7 +66,7 @@ class SwaggerManualSchemaTest {
     @KtorDsl
     private fun applicationCustomRoute(configuration: Routing.() -> Unit) {
         withTestApplication({
-            install(Locations)
+            install(Resources)
             install(SwaggerSupport) {
                 swagger = Swagger().apply {
                     definitions["size"] = sizeSchemaMap

@@ -8,17 +8,18 @@ import de.nielsfalk.ktor.swagger.version.shared.ParameterInputType
 import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
-import io.ktor.server.application.install
 import io.ktor.http.ContentType
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.Locations
+import io.ktor.resources.Resource
+import io.ktor.server.application.install
+import io.ktor.server.resources.Resources
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.withTestApplication
+import kotlinx.serialization.Serializable
 import org.junit.Before
 import org.junit.Test
+import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
 import de.nielsfalk.ktor.swagger.version.v2.Parameter as ParameterV2
 import de.nielsfalk.ktor.swagger.version.v2.Response as ResponseV2
-import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
 import de.nielsfalk.ktor.swagger.version.v3.Operation as OperationV3
 import de.nielsfalk.ktor.swagger.version.v3.Response as ResponseV3
 
@@ -53,7 +54,8 @@ data class ErrorModel(
 const val toysLocation = "/toys/{id}"
 
 @Group("toy")
-@Location(toysLocation)
+@Resource(toysLocation)
+@Serializable
 class toy(
     val id: Int,
     @Ignore
@@ -62,10 +64,12 @@ class toy(
 
 const val toyLocation = "/toys"
 
-@Location(toyLocation)
+@Resource(toyLocation)
+@Serializable
 class toys
 
-@Location("/withParameter")
+@Resource("/withParameter")
+@Serializable
 class withParameter
 
 class Header(
@@ -83,7 +87,7 @@ class SwaggerTest {
     @Before
     fun setUp() {
         withTestApplication({
-            install(Locations)
+            install(Resources)
             install(SwaggerSupport) {
                 swagger = Swagger()
                 openApi = OpenApi()

@@ -6,12 +6,13 @@ import io.ktor.server.application.install
 import io.ktor.serialization.gson.GsonConverter
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.Locations
+import io.ktor.resources.Resource
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.resources.Resources
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
+import kotlinx.serialization.Serializable
 import org.junit.Test
 
 class SwaggerSupportTest {
@@ -72,7 +73,8 @@ class SwaggerSupportTest {
         }.response.content.should.contain("\"swagger\":\"2.0\"")
     }
 
-    @Location("/model")
+    @Resource("/model")
+    @Serializable
     private class modelRoute
 
     private class Model(val value: String)
@@ -89,7 +91,7 @@ class SwaggerSupportTest {
                 definitions["Model"] = mapOf("type" to "object")
             }
         }
-        application.install(Locations)
+        application.install(Resources)
 
         application.routing {
             put<modelRoute, Model>(noReflectionBody()) { _, _ -> }
