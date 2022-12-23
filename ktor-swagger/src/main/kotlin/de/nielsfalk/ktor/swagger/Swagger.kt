@@ -278,7 +278,10 @@ private val propertyTypes = mapOf(
     Instant::class to Property("string", "date-time"),
     Date::class to Property("string", "date-time"),
     LocalDateTime::class to Property("string", "date-time"),
-    LocalDate::class to Property("string", "date")
+    LocalDate::class to Property("string", "date"),
+    kotlinx.datetime.Instant::class to Property("string", "date-time"),
+    kotlinx.datetime.LocalDateTime::class to Property("string", "date-time"),
+    kotlinx.datetime.LocalDate::class to Property("string", "date")
 ).mapKeys { it.key.qualifiedName }.mapValues { it.value to emptyList<TypeInfo>() }
 
 internal fun <T, R> KProperty1<T, R>.returnTypeInfo(reifiedType: Type?): TypeInfo =

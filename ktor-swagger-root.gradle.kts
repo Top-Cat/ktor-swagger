@@ -55,6 +55,8 @@ subprojects {
         "api"(ktor("ktor-server-compression"))
         "api"(ktor("ktor-server-call-logging"))
 
+        "api"("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+
         "testImplementation"(ktor("ktor-server-test-host"))
         "testImplementation"(ktor("ktor-server-content-negotiation"))
         "testImplementation"(ktor("ktor-serialization-gson"))
