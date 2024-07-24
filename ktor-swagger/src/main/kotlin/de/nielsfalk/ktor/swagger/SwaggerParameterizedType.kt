@@ -2,6 +2,10 @@ package de.nielsfalk.ktor.swagger
 
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.lang.reflect.TypeVariable
+import kotlin.reflect.KTypeParameter
+import kotlin.reflect.KTypeProjection
+import kotlin.reflect.javaType
 
 /**
  * Create a parameterized type instance.
@@ -9,18 +13,25 @@ import java.lang.reflect.Type
  * @param typeArguments the mapping used for parameterization
  * @return [ParameterizedType]
  */
-internal fun parameterize(raw: Class<*>, vararg typeArguments: Type): ParameterizedType {
+@OptIn(ExperimentalStdlibApi::class)
+internal fun parameterize(raw: Class<*>, rawArgs: List<KTypeParameter>, arguments: List<KTypeProjection>, vararg typeArguments: Type): ParameterizedType? {
     val useOwner: Type? = if (raw.enclosingClass == null) {
         // no owner allowed for top-level
         null
     } else {
         raw.enclosingClass
     }
-    require(raw.typeParameters.size == typeArguments.size) {
-        "invalid number of type parameters specified: expected ${raw.typeParameters.size}, got ${typeArguments.size}"
+
+    val argTest = arguments.mapNotNull { arg ->
+        if (arg.type?.javaType is TypeVariable<*>) {
+            val index = rawArgs.indexOfFirst { r -> r.name == (arg.type?.classifier as? KTypeParameter)?.name }
+            typeArguments[index]
+        } else {
+            arg.type?.javaType
+        }
     }
-    @Suppress("UNCHECKED_CAST")
-    return ParameterizedTypeImpl(raw, useOwner, typeArguments as Array<Type>)
+
+    return ParameterizedTypeImpl(raw, useOwner, argTest.toTypedArray())
 }
 
 /**
@@ -45,7 +56,7 @@ internal constructor(
         if (other is ParameterizedType) {
             rawType == other.rawType &&
                 ownerType == other.ownerType &&
-                actualTypeArguments.contentEquals(other.actualTypeArguments)
+                    actualTypeArguments.contentEquals(other.actualTypeArguments)
         } else {
             false
         }

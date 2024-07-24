@@ -5,7 +5,7 @@ import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.v2.Parameter
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.util.reflect.typeInfo
-import junit.framework.Assert.assertEquals
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
 import java.time.Instant
 import java.time.LocalDate

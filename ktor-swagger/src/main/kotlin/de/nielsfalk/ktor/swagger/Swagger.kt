@@ -311,7 +311,7 @@ internal fun Type.rawKotlinKClass() = when (this) {
 
 private fun KType.parameterize(reifiedType: Type?): ParameterizedType? =
     (reifiedType as? ParameterizedType)?.let {
-        parameterize((classifier as KClass<*>).java, *it.actualTypeArguments)
+        parameterize((classifier as KClass<*>).java, reifiedType.rawKotlinKClass().typeParameters, arguments, *it.actualTypeArguments)
     }
 
 private val KClass<*>?.isCollectionType

@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package de.nielsfalk.ktor.swagger
 
 import com.winterbe.expekt.should
@@ -8,17 +6,15 @@ import de.nielsfalk.ktor.swagger.version.shared.ParameterInputType
 import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
-import io.ktor.server.application.install
 import io.ktor.http.ContentType
 import io.ktor.server.locations.Location
 import io.ktor.server.locations.Locations
-import io.ktor.server.routing.routing
-import io.ktor.server.testing.withTestApplication
+import io.ktor.server.testing.testApplication
 import org.junit.Before
 import org.junit.Test
+import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
 import de.nielsfalk.ktor.swagger.version.v2.Parameter as ParameterV2
 import de.nielsfalk.ktor.swagger.version.v2.Response as ResponseV2
-import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
 import de.nielsfalk.ktor.swagger.version.v3.Operation as OperationV3
 import de.nielsfalk.ktor.swagger.version.v3.Response as ResponseV3
 
@@ -48,6 +44,23 @@ data class ToysModel(val toys: MutableList<ToyModel>) {
 
 data class ErrorModel(
     val message: String
+)
+
+data class GenericSubModel<S>(
+    val data: S
+)
+
+data class MultipleGenericSubModel<A, B>(
+    val a: A,
+    val b: B,
+    val c: GenericSubModel<Boolean>
+)
+
+data class GenericModel<T, U>(
+    val data: T,
+    val subModel: GenericSubModel<U>,
+    val multipleSub: MultipleGenericSubModel<U, U>,
+    val success: Boolean
 )
 
 const val toysLocation = "/toys/{id}"
@@ -82,11 +95,15 @@ class SwaggerTest {
 
     @Before
     fun setUp() {
-        withTestApplication({
+        testApplication {
             install(Locations)
             install(SwaggerSupport) {
                 swagger = Swagger()
                 openApi = OpenApi()
+
+                this@SwaggerTest.swagger = swagger!!
+                this@SwaggerTest.openapi = openApi!!
+
                 openApiCustomization = {
                     responds(
                         internalServerError<ErrorModel>()
@@ -98,9 +115,9 @@ class SwaggerTest {
                     )
                 }
             }
-        }) {
+
             // when:
-            application.routing {
+            routing {
                 post<toy, String>(
                     "new"
                         .description("Put a toy string!")
@@ -141,7 +158,8 @@ class SwaggerTest {
                                 json<ToyModel>(),
                                 contentTypeResponse(ContentType.Image.PNG),
                                 description = ""
-                            )
+                            ),
+                            ok<GenericModel<String, Int>>()
                         )
                         .operationId("fetchToyImage")
                 ) {
@@ -159,9 +177,6 @@ class SwaggerTest {
                 ) { }
                 get<withParameter>("with parameter".responds(ok<Unit>()).parameter<QueryParameter>().header<Header>()) {}
             }
-
-            this@SwaggerTest.swagger = application.swaggerUi.swagger!!
-            this@SwaggerTest.openapi = application.swaggerUi.openApi!!
         }
     }
 
