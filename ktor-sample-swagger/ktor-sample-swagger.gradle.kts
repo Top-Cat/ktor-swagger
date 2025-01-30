@@ -16,5 +16,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "de.nielsfalk.ktor.swagger.sample.JsonApplicationKt"
+    mainClass = "de.nielsfalk.ktor.swagger.sample.JsonApplicationKt"
 }

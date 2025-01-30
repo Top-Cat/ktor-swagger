@@ -11,7 +11,7 @@ buildscript {
 }
 plugins {
     // https://github.com/diffplug/spotless/tree/master/plugin-gradle
-    id("com.diffplug.gradle.spotless") version "4.5.1"
+    id("com.diffplug.spotless") version "7.0.2"
     jacoco
     `maven-publish`
 }
@@ -25,7 +25,7 @@ object Versions {
 
 allprojects {
     apply {
-        plugin("com.diffplug.gradle.spotless")
+        plugin("com.diffplug.spotless")
     }
     group = "de.nielsfalk.ktor"
     version = System.getenv("BUILD_NUMBER")?.let { "0.8.${it}" } ?: "0.8.0"
@@ -73,9 +73,9 @@ subprojects {
 
     tasks.withType<JacocoReport> {
         reports {
-            html.isEnabled = true
-            xml.isEnabled = true
-            csv.isEnabled = false
+            html.required = true
+            xml.required = true
+            csv.required = false
         }
     }
 }
@@ -106,9 +106,9 @@ val jacocoRootReport = tasks.register<JacocoReport>("jacocoRootReport") {
     }
 
     reports {
-        html.isEnabled = true
-        xml.isEnabled = true
-        csv.isEnabled = false
+        html.required = true
+        xml.required = true
+        csv.required = false
     }
 }
 
