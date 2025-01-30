@@ -3,6 +3,7 @@ package de.nielsfalk.ktor.swagger
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.TypeVariable
+import kotlin.reflect.KType
 import kotlin.reflect.KTypeParameter
 import kotlin.reflect.KTypeProjection
 import kotlin.reflect.javaType
@@ -14,7 +15,7 @@ import kotlin.reflect.javaType
  * @return [ParameterizedType]
  */
 @OptIn(ExperimentalStdlibApi::class)
-internal fun parameterize(raw: Class<*>, rawArgs: List<KTypeParameter>, arguments: List<KTypeProjection>, vararg typeArguments: Type): ParameterizedType? {
+internal fun parameterize(map: Map<String, Type>?, raw: Class<*>, rawArgs: List<KTypeParameter>, arguments: List<KTypeProjection>, vararg typeArguments: Type): ParameterizedType? {
     val useOwner: Type? = if (raw.enclosingClass == null) {
         // no owner allowed for top-level
         null
@@ -22,16 +23,17 @@ internal fun parameterize(raw: Class<*>, rawArgs: List<KTypeParameter>, argument
         raw.enclosingClass
     }
 
+    val argMap = map ?: rawArgs.zip(typeArguments).map { it.first.name to it.second }.toMap()
+
     val argTest = arguments.mapNotNull { arg ->
         if (arg.type?.javaType is TypeVariable<*>) {
-            val index = rawArgs.indexOfFirst { r -> r.name == (arg.type?.classifier as? KTypeParameter)?.name }
-            typeArguments[index]
+            argMap[(arg.type?.classifier as? KTypeParameter)?.name]
         } else {
             arg.type?.javaType
         }
     }
 
-    return ParameterizedTypeImpl(raw, useOwner, argTest.toTypedArray())
+    return ParameterizedTypeImpl(argMap, raw, useOwner, argTest.toTypedArray())
 }
 
 /**
@@ -40,6 +42,7 @@ internal fun parameterize(raw: Class<*>, rawArgs: List<KTypeParameter>, argument
  */
 internal data class ParameterizedTypeImpl
 internal constructor(
+    internal val rootReifiedMap: Map<String, Type>,
     private val rawType: Type,
     private val ownerType: Type?,
     private val actualTypeArguments: Array<Type>

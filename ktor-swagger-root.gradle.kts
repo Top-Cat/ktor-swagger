@@ -36,7 +36,7 @@ allprojects {
 }
 
 fun DependencyHandler.ktor(name: String) =
-    create(group = "io.ktor", name = name, version = "2.0.3")
+    create(group = "io.ktor", name = name, version = "2.3.12")
 
 subprojects {
     apply {
@@ -117,7 +117,7 @@ allprojects {
     pluginManager.withPlugin("jacoco") {
         // If this project has the plugin applied, configure the tool version.
         jacoco {
-            toolVersion = "0.8.2"
+            toolVersion = "0.8.12"
         }
     }
 }
