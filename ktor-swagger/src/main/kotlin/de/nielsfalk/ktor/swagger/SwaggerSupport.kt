@@ -65,12 +65,12 @@ class SwaggerSupport(
             }
             pipeline.routing {
                 get("/$path") {
-                    redirect(path, defaultJsonFile)
+                    redirect(path)
                 }
                 get("/$path/") {
-                    redirect(path, defaultJsonFile)
+                    redirect(path)
                 }
-                val ui = if (provideUi) SwaggerUi() else null
+                val ui = if (provideUi) SwaggerUi(defaultJsonFile) else null
                 get("/$path/{fileName}") {
                     val filename = call.parameters["fileName"]
                     if (filename == swaggerJsonFileName && swagger != null) {
@@ -84,15 +84,15 @@ class SwaggerSupport(
                 if (forwardRoot) {
 
                     get("/") {
-                        redirect(path, defaultJsonFile)
+                        redirect(path)
                     }
                 }
             }
             return feature
         }
 
-        private suspend fun PipelineContext<Unit, ApplicationCall>.redirect(path: String, defaultJsonFile: String) {
-            call.respondRedirect("/$path/index.html?url=./$defaultJsonFile")
+        private suspend fun PipelineContext<Unit, ApplicationCall>.redirect(path: String) {
+            call.respondRedirect("/$path/index.html")
         }
     }
 

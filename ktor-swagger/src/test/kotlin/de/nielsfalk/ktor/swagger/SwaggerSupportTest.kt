@@ -27,13 +27,13 @@ class SwaggerSupportTest {
         }
 
         client.get("/").let { response ->
-            response.headers["Location"].should.equal("/apidocs/index.html?url=./swagger.json")
+            response.headers["Location"].should.equal("/apidocs/index.html")
         }
         client.get("/apidocs").let { response ->
-            response.headers["Location"].should.equal("/apidocs/index.html?url=./swagger.json")
+            response.headers["Location"].should.equal("/apidocs/index.html")
         }
         client.get("/apidocs/").let { response ->
-            response.headers["Location"].should.equal("/apidocs/index.html?url=./swagger.json")
+            response.headers["Location"].should.equal("/apidocs/index.html")
         }
     }
 

@@ -9,9 +9,10 @@ import io.ktor.http.ContentType.Text.JavaScript
 import io.ktor.http.content.OutgoingContent
 import io.ktor.http.withCharset
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
 import java.net.URL
 
-class SwaggerUi {
+class SwaggerUi(private val defaultJsonFile: String) {
     private val notFound = mutableListOf<String>()
     private val content = mutableMapOf<String, ResourceContent>()
     suspend fun serve(filename: String?, call: ApplicationCall) {
@@ -24,6 +25,18 @@ class SwaggerUi {
                     notFound.add(filename)
                     return
                 }
+
+                if (filename == "swagger-initializer.js") {
+                    val originalBody = resource.readText()
+                    val newBody = originalBody.replace(
+                        "https://petstore.swagger.io/v2/swagger.json",
+                        defaultJsonFile
+                    )
+
+                    call.respondText(newBody, ContentType.Text.Html)
+                    return
+                }
+
                 call.respond(content.getOrPut(filename) { ResourceContent(resource) })
             }
         }
