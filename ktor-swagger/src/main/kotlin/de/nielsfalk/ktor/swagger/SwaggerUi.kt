@@ -33,7 +33,7 @@ class SwaggerUi(private val defaultJsonFile: String) {
                         defaultJsonFile
                     )
 
-                    call.respondText(newBody, ContentType.Text.Html)
+                    call.respondText(newBody, JavaScript)
                     return
                 }
 
