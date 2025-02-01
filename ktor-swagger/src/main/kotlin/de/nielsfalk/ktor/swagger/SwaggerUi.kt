@@ -37,10 +37,15 @@ class SwaggerUi(private val defaultJsonFile: String, private val nonce: (Applica
                 } else if (filename == "index.html") {
                     val originalBody = resource.readText()
                     val nonceValue = nonce(call)
-                    val newBody = originalBody.replace(
-                        Regex("(rel=\"stylesheet\"|script src=\"[^\"]*\")"),
-                    ) {
-                        (it.groups[0]?.value ?: "") + " nonce=\"$nonceValue\""
+
+                    val newBody = if (nonceValue != null) {
+                        originalBody.replace(
+                            Regex("(rel=\"stylesheet\"|script src=\"[^\"]*\")"),
+                        ) {
+                            (it.groups[0]?.value ?: "") + " nonce=\"$nonceValue\""
+                        }
+                    } else {
+                        originalBody
                     }
 
                     call.respondText(newBody, Html)
