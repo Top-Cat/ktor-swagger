@@ -317,5 +317,5 @@ data class SwaggerUiConfiguration(
      * Customization mutation applied to every [Metadata] processed for the openapi.json
      */
     var openApiCustomization: Metadata.(HttpMethod) -> Metadata = { this },
-    var nonce: String? = null
+    var nonce: (ApplicationCall) -> String? = { null }
 )

@@ -12,7 +12,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import java.net.URL
 
-class SwaggerUi(private val defaultJsonFile: String, private val nonce: String?) {
+class SwaggerUi(private val defaultJsonFile: String, private val nonce: (ApplicationCall) -> String?) {
     private val notFound = mutableListOf<String>()
     private val content = mutableMapOf<String, ResourceContent>()
     suspend fun serve(filename: String?, call: ApplicationCall) {
@@ -36,10 +36,11 @@ class SwaggerUi(private val defaultJsonFile: String, private val nonce: String?)
                     call.respondText(newBody, JavaScript)
                 } else if (filename == "index.html") {
                     val originalBody = resource.readText()
+                    val nonceValue = nonce(call)
                     val newBody = originalBody.replace(
                         Regex("(rel=\"stylesheet\"|script src=\"[^\"]*\")"),
                     ) {
-                        (it.groups[0]?.value ?: "") + " nonce=\"$nonce\""
+                        (it.groups[0]?.value ?: "") + " nonce=\"$nonceValue\""
                     }
 
                     call.respondText(newBody, Html)
