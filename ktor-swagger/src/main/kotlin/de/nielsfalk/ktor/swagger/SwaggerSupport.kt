@@ -54,7 +54,8 @@ class SwaggerSupport(
                 swagger,
                 openApi,
                 swaggerConfig,
-                openpapiConfig
+                openpapiConfig,
+                nonce
             ) = SwaggerUiConfiguration().apply(configure)
             val feature = SwaggerSupport(swagger, swaggerConfig, openApi, openpapiConfig)
 
@@ -70,7 +71,7 @@ class SwaggerSupport(
                 get("/$path/") {
                     redirect(path)
                 }
-                val ui = if (provideUi) SwaggerUi(defaultJsonFile) else null
+                val ui = if (provideUi) SwaggerUi(defaultJsonFile, nonce) else null
                 get("/$path/{fileName}") {
                     val filename = call.parameters["fileName"]
                     if (filename == swaggerJsonFileName && swagger != null) {
@@ -315,5 +316,6 @@ data class SwaggerUiConfiguration(
     /**
      * Customization mutation applied to every [Metadata] processed for the openapi.json
      */
-    var openApiCustomization: Metadata.(HttpMethod) -> Metadata = { this }
+    var openApiCustomization: Metadata.(HttpMethod) -> Metadata = { this },
+    var nonce: String? = null
 )

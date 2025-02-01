@@ -177,6 +177,7 @@ internal fun run(port: Int, wait: Boolean = true): ApplicationEngine {
                 components.schemas[petUuid] = petIdSchema
                 components.schemas["Rectangle"] = rectangleSchemaMap("#/components/schemas")
             }
+            nonce = "example-nonce"
         }
         routing {
             get<pets>("all".responds(ok<PetsModel>(example("model", PetsModel.exampleModel)))) {
