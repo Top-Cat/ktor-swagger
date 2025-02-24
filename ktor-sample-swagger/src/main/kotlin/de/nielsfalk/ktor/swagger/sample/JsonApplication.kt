@@ -9,11 +9,11 @@ import de.nielsfalk.ktor.swagger.created
 import de.nielsfalk.ktor.swagger.delete
 import de.nielsfalk.ktor.swagger.description
 import de.nielsfalk.ktor.swagger.example
-import de.nielsfalk.ktor.swagger.operationId
 import de.nielsfalk.ktor.swagger.examples
 import de.nielsfalk.ktor.swagger.get
 import de.nielsfalk.ktor.swagger.notFound
 import de.nielsfalk.ktor.swagger.ok
+import de.nielsfalk.ktor.swagger.operationId
 import de.nielsfalk.ktor.swagger.patch
 import de.nielsfalk.ktor.swagger.post
 import de.nielsfalk.ktor.swagger.put
@@ -24,28 +24,26 @@ import de.nielsfalk.ktor.swagger.version.shared.Information
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
 import de.nielsfalk.ktor.swagger.version.v3.Schema
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
-import io.ktor.server.application.install
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.resources.Resource
 import io.ktor.serialization.gson.gson
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.routing
-import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.application.install
+import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.compression.Compression
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.util.StringValues
-import io.ktor.util.pipeline.PipelineContext
-import io.ktor.util.toMap
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 import io.ktor.server.resources.Resources
-import kotlinx.serialization.Serializable
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.routing
+import io.ktor.util.StringValues
+import io.ktor.util.toMap
 
 data class PetModel(val id: Int?, val name: String) {
     companion object {
@@ -98,24 +96,20 @@ fun newId() = ((data.pets.map { it.id ?: 0 }.max()) ?: 0) + 1
 
 @Group("pet operations")
 @Resource("/pets/{id}")
-@Serializable
 class pet(val id: Int)
 
 @Group("pet operations")
 @Resource("/pets")
-@Serializable
 class pets
 
 @Group("generic operations")
 @Resource("/genericPets")
-@Serializable
 class genericPets
 
 const val petUuid = "petUuid"
 
 @Group("generic operations")
 @Resource("/pet/custom/{id}")
-@Serializable
 class petCustomSchemaParam(
     @Schema(petUuid)
     val id: String
@@ -129,29 +123,25 @@ val petIdSchema = mapOf(
 
 @Group("shape operations")
 @Resource("/shapes")
-@Serializable
 class shapes
 
 @Group("debug")
 @Resource("/request/info")
-@Serializable
 class requestInfo
 
 @Group("debug")
 @Resource("/request/withHeader")
-@Serializable
 class withHeader
 
 class Header(val optionalHeader: String?, val mandatoryHeader: Int)
 
 @Group("debug")
 @Resource("/request/withQueryParameter")
-@Serializable
 class withQueryParameter
 
 class QueryParameter(val optionalParameter: String?, val mandatoryParameter: Int)
 
-internal fun run(port: Int, wait: Boolean = true): ApplicationEngine {
+internal fun run(port: Int, wait: Boolean = true): EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> {
     println("Launching on port `$port`")
     val server = embeddedServer(Netty, port) {
         install(DefaultHeaders)
@@ -186,6 +176,7 @@ internal fun run(port: Int, wait: Boolean = true): ApplicationEngine {
                 components.schemas[petUuid] = petIdSchema
                 components.schemas["Rectangle"] = rectangleSchemaMap("#/components/schemas")
             }
+            nonce = { "example-nonce" }
         }
         routing {
             get<pets>("all".responds(ok<PetsModel>(example("model", PetsModel.exampleModel)))) {
@@ -292,7 +283,7 @@ internal fun run(port: Int, wait: Boolean = true): ApplicationEngine {
     return server.start(wait = wait)
 }
 
-fun respondRequestDetails(): suspend PipelineContext<Unit, ApplicationCall>.(Any) -> Unit {
+fun respondRequestDetails(): suspend RoutingContext.(Any) -> Unit {
     return {
         call.respond(
             mapOf(

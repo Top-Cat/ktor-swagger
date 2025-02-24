@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutorService.TestTask
+
 buildscript {
     repositories {
         mavenCentral()
@@ -13,9 +15,10 @@ buildscript {
 }
 plugins {
     // https://github.com/diffplug/spotless/tree/master/plugin-gradle
-    id("com.diffplug.gradle.spotless") version "4.5.1"
+    id("com.diffplug.spotless") version "7.0.2"
     jacoco
     `maven-publish`
+    kotlin("plugin.serialization") version "2.1.0"
 }
 
 object Versions {
@@ -27,19 +30,24 @@ object Versions {
 
 allprojects {
     apply {
-        plugin("com.diffplug.gradle.spotless")
+        plugin("com.diffplug.spotless")
+        plugin("org.jetbrains.kotlin.plugin.serialization")
     }
 
     group = "de.nielsfalk.ktor"
-    version = System.getenv("BUILD_NUMBER")?.let { "0.8.${it}" } ?: "0.8.0"
+    version = System.getenv("BUILD_NUMBER")?.let { "0.9.${it}" } ?: "0.9.0"
 
     repositories {
         mavenCentral()
     }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 }
 
 fun DependencyHandler.ktor(name: String) =
-    create(group = "io.ktor", name = name, version = "2.0.3")
+    create(group = "io.ktor", name = name, version = "3.1.0")
 
 subprojects {
     apply {
@@ -59,6 +67,8 @@ subprojects {
         "api"(ktor("ktor-server-compression"))
         "api"(ktor("ktor-server-call-logging"))
 
+        "api"("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+
         "testImplementation"(ktor("ktor-server-test-host"))
         "testImplementation"(ktor("ktor-server-content-negotiation"))
         "testImplementation"(ktor("ktor-serialization-gson"))
@@ -75,9 +85,9 @@ subprojects {
 
     tasks.withType<JacocoReport> {
         reports {
-            html.isEnabled = true
-            xml.isEnabled = true
-            csv.isEnabled = false
+            html.required = true
+            xml.required = true
+            csv.required = false
         }
     }
 }
@@ -108,9 +118,9 @@ val jacocoRootReport = tasks.register<JacocoReport>("jacocoRootReport") {
     }
 
     reports {
-        html.isEnabled = true
-        xml.isEnabled = true
-        csv.isEnabled = false
+        html.required = true
+        xml.required = true
+        csv.required = false
     }
 }
 
@@ -119,7 +129,7 @@ allprojects {
     pluginManager.withPlugin("jacoco") {
         // If this project has the plugin applied, configure the tool version.
         jacoco {
-            toolVersion = "0.8.2"
+            toolVersion = "0.8.12"
         }
     }
 }

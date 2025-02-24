@@ -1,11 +1,9 @@
-import org.jetbrains.kotlin.contracts.model.structure.UNKNOWN_COMPUTATION.type
-
 plugins {
     `application`
 }
 
 fun DependencyHandler.ktor(name: String) =
-    create(group = "io.ktor", name = name, version = "2.0.3")
+    create(group = "io.ktor", name = name, version = "3.1.0")
 
 dependencies {
     implementation(project(":ktor-swagger"))
@@ -16,5 +14,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "de.nielsfalk.ktor.swagger.sample.JsonApplicationKt"
+    mainClass = "de.nielsfalk.ktor.swagger.sample.JsonApplicationKt"
 }
