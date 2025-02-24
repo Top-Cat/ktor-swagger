@@ -6,11 +6,9 @@ buildscript {
         maven {
             setUrl("https://plugins.gradle.org/m2/")
         }
-        maven("https://kotlin.bintray.com/kotlinx")
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${property("kotlin.version")}")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:${property("kotlin.version")}")
     }
 }
 plugins {
@@ -52,7 +50,6 @@ fun DependencyHandler.ktor(name: String) =
 subprojects {
     apply {
         plugin("kotlin")
-        plugin("kotlinx-serialization")
         plugin("java-library")
         plugin("jacoco")
     }
