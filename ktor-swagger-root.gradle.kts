@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutorService.TestTask
+
 buildscript {
     repositories {
         mavenCentral()
@@ -14,6 +16,7 @@ plugins {
     id("com.diffplug.spotless") version "7.0.2"
     jacoco
     `maven-publish`
+    kotlin("plugin.serialization") version "2.1.0"
 }
 
 object Versions {
@@ -26,17 +29,22 @@ object Versions {
 allprojects {
     apply {
         plugin("com.diffplug.spotless")
+        plugin("org.jetbrains.kotlin.plugin.serialization")
     }
     group = "de.nielsfalk.ktor"
-    version = System.getenv("BUILD_NUMBER")?.let { "0.8.${it}" } ?: "0.8.0"
+    version = System.getenv("BUILD_NUMBER")?.let { "0.9.${it}" } ?: "0.9.0"
 
     repositories {
         mavenCentral()
     }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 }
 
 fun DependencyHandler.ktor(name: String) =
-    create(group = "io.ktor", name = name, version = "2.3.12")
+    create(group = "io.ktor", name = name, version = "3.1.0")
 
 subprojects {
     apply {
@@ -48,7 +56,7 @@ subprojects {
     dependencies {
         "api"(kotlin(module = "stdlib", version = property("kotlin.version") as String))
         "api"(kotlin(module = "reflect", version = property("kotlin.version") as String))
-        "api"(ktor("ktor-server-locations"))
+        "api"(ktor("ktor-server-resources"))
         "api"(ktor("ktor-server-core"))
         "api"(ktor("ktor-server-content-negotiation"))
         "api"(ktor("ktor-server-default-headers"))

@@ -8,18 +8,17 @@ import de.nielsfalk.ktor.swagger.version.shared.ParameterBase
 import de.nielsfalk.ktor.swagger.version.shared.ParameterInputType
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
+import io.ktor.http.HttpMethod
+import io.ktor.resources.Resource
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
-import io.ktor.http.HttpMethod
 import io.ktor.server.application.BaseApplicationPlugin
-import io.ktor.server.locations.Location
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
+import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.util.AttributeKey
-import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.util.reflect.typeInfo
 import kotlin.reflect.KClass
@@ -92,7 +91,7 @@ class SwaggerSupport(
             return feature
         }
 
-        private suspend fun PipelineContext<Unit, ApplicationCall>.redirect(path: String) {
+        private suspend fun RoutingContext.redirect(path: String) {
             call.respondRedirect("/$path/index.html")
         }
     }
@@ -118,11 +117,11 @@ class SwaggerSupport(
         }
 
     inline fun <reified LOCATION : Any, reified ENTITY_TYPE : Any> Metadata.apply(method: HttpMethod) {
-        apply(LOCATION::class, typeInfo<ENTITY_TYPE>(), method)
+        apply(LOCATION::class, sTypeInfo<ENTITY_TYPE>(), method)
     }
 
     @PublishedApi
-    internal fun Metadata.apply(locationClass: KClass<*>, bodyTypeInfo: TypeInfo, method: HttpMethod) {
+    internal fun Metadata.apply(locationClass: KClass<*>, bodyTypeInfo: SwaggerTypeInfo, method: HttpMethod) {
         variations.forEach {
             it.apply { metaDataConfiguration(method).apply(locationClass, bodyTypeInfo, method) }
         }
@@ -165,9 +164,9 @@ private abstract class BaseWithVariation<B : CommonBase>(
 
     abstract fun addDefinition(name: String, schema: Any)
 
-    fun addDefinition(typeInfo: TypeInfo) {
+    fun addDefinition(typeInfo: SwaggerTypeInfo) {
         if (typeInfo.type != Unit::class) {
-            val accruedNewDefinitions = mutableListOf<TypeInfo>()
+            val accruedNewDefinitions = mutableListOf<SwaggerTypeInfo>()
             schemaHolder
                 .computeIfAbsent(typeInfo.modelName()) {
                     val modelWithAdditionalDefinitions = variation {
@@ -181,13 +180,13 @@ private abstract class BaseWithVariation<B : CommonBase>(
         }
     }
 
-    fun addDefinitions(kClasses: Collection<TypeInfo>) =
+    fun addDefinitions(kClasses: Collection<SwaggerTypeInfo>) =
         kClasses.forEach {
             addDefinition(it)
         }
 
     fun <LOCATION : Any> Metadata.applyOperations(
-        location: Location,
+        location: Resource,
         group: Group?,
         method: HttpMethod,
         locationType: KClass<LOCATION>,
@@ -253,7 +252,7 @@ private abstract class BaseWithVariation<B : CommonBase>(
         base.paths
             .getOrPut(location.path) { mutableMapOf() }
             .put(
-                method.value.toLowerCase(),
+                method.value.lowercase(),
                 createOperation()
             )
     }
@@ -269,7 +268,7 @@ private abstract class BaseWithVariation<B : CommonBase>(
         return destination.toMap()
     }
 
-    private fun Metadata.createBodyType(typeInfo: TypeInfo): BodyType = when {
+    private fun Metadata.createBodyType(typeInfo: SwaggerTypeInfo): BodyType = when {
         bodySchema != null -> {
             BodyFromSchema(
                     name = bodySchema.name ?: typeInfo.modelName(),
@@ -285,11 +284,11 @@ private abstract class BaseWithVariation<B : CommonBase>(
             "Method type $method does not support a body parameter."
         }
 
-    internal fun Metadata.apply(locationClass: KClass<*>, bodyTypeInfo: TypeInfo, method: HttpMethod) {
+    internal fun Metadata.apply(locationClass: KClass<*>, bodyTypeInfo: SwaggerTypeInfo, method: HttpMethod) {
         requireMethodSupportsBody(method)
         val bodyType = createBodyType(bodyTypeInfo)
         val clazz = locationClass.java
-        val location = clazz.getAnnotation(Location::class.java)
+        val location = clazz.getAnnotation(Resource::class.java)
         val tags = clazz.getAnnotation(Group::class.java)
 
         applyOperations(location, tags, method, locationClass, bodyType)

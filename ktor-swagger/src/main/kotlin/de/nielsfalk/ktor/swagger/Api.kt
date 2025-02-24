@@ -2,8 +2,6 @@ package de.nielsfalk.ktor.swagger
 
 import de.nielsfalk.ktor.swagger.version.shared.ModelName
 import de.nielsfalk.ktor.swagger.version.v3.Example
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -13,19 +11,20 @@ import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.server.locations.patch
-import io.ktor.server.locations.put
-import io.ktor.server.locations.delete
-import io.ktor.server.locations.get
-import io.ktor.server.locations.post
 import io.ktor.server.request.receive
+import io.ktor.server.resources.delete
+import io.ktor.server.resources.get
+import io.ktor.server.resources.patch
+import io.ktor.server.resources.post
+import io.ktor.server.resources.put
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.application
-import io.ktor.util.KtorDsl
-import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.util.reflect.typeInfo
+import io.ktor.utils.io.KtorDsl
 import kotlin.reflect.KClass
+import kotlin.reflect.javaType
 
 data class Metadata(
     internal val bodySchema: BodySchema? = null,
@@ -151,21 +150,25 @@ sealed class ResponseType() {
 
 data class JsonResponseFromReflection
 internal constructor(
-    val type: TypeInfo,
+    val type: SwaggerTypeInfo,
     override val examples: Map<String, Example>
 ) : ResponseType() {
     companion object {
 
         @PublishedApi
-        internal fun create(type: TypeInfo, examples: Map<String, Example>) =
+        internal fun create(type: SwaggerTypeInfo, examples: Map<String, Example>) =
             JsonResponseFromReflection(
                 type, examples
             )
     }
 }
 
+@OptIn(ExperimentalStdlibApi::class)
+fun TypeInfo.toSwagger(): SwaggerTypeInfo = SwaggerTypeInfo(type, kotlinType!!.javaType)
+inline fun <reified T> sTypeInfo(): SwaggerTypeInfo = typeInfo<T>().toSwagger()
+
 inline fun <reified T> json(vararg examples: Pair<String, Example> = arrayOf()): ResponseType =
-    JsonResponseFromReflection.create(typeInfo<T>(), mapOf(*examples))
+    JsonResponseFromReflection.create(sTypeInfo<T>(), mapOf(*examples))
 
 data class JsonResponseSchema
 internal constructor(
@@ -188,7 +191,7 @@ sealed class BodyType {
 }
 
 data class BodyFromString(override val examples: Map<String, Example>) : BodyType()
-data class BodyFromReflection(val typeInfo: TypeInfo, override val examples: Map<String, Example>) : BodyType()
+data class BodyFromReflection(val typeInfo: SwaggerTypeInfo, override val examples: Map<String, Example>) : BodyType()
 data class BodyFromSchema(val name: ModelName, override val examples: Map<String, Example>) : BodyType()
 
 inline fun <reified T> ok(vararg examples: Pair<String, Example> = arrayOf()): HttpCodeResponse =
@@ -269,7 +272,7 @@ fun contentTypeResponse(contentType: ContentType): ResponseType =
 @KtorDsl
 inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.post(
     metadata: Metadata,
-    noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, ENTITY) -> Unit
+    noinline body: suspend RoutingContext.(LOCATION, ENTITY) -> Unit
 ): Route {
     application.swaggerUi.apply {
         metadata.apply<LOCATION, ENTITY>(HttpMethod.Post)
@@ -283,7 +286,7 @@ inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.post(
 @KtorDsl
 inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.patch(
     metadata: Metadata,
-    noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, ENTITY) -> Unit
+    noinline body: suspend RoutingContext.(LOCATION, ENTITY) -> Unit
 ): Route {
     application.swaggerUi.apply {
         metadata.apply<LOCATION, ENTITY>(HttpMethod.Patch)
@@ -297,7 +300,7 @@ inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.patch(
 @KtorDsl
 inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.put(
     metadata: Metadata,
-    noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION, ENTITY) -> Unit
+    noinline body: suspend RoutingContext.(LOCATION, ENTITY) -> Unit
 ): Route {
     application.swaggerUi.apply {
         metadata.apply<LOCATION, ENTITY>(HttpMethod.Put)
@@ -310,7 +313,7 @@ inline fun <reified LOCATION : Any, reified ENTITY : Any> Route.put(
 @KtorDsl
 inline fun <reified LOCATION : Any> Route.get(
     metadata: Metadata,
-    noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION) -> Unit
+    noinline body: suspend RoutingContext.(LOCATION) -> Unit
 ): Route {
     application.swaggerUi.apply {
         metadata.apply<LOCATION, Unit>(HttpMethod.Get)
@@ -321,7 +324,7 @@ inline fun <reified LOCATION : Any> Route.get(
 @KtorDsl
 inline fun <reified LOCATION : Any> Route.delete(
     metadata: Metadata,
-    noinline body: suspend PipelineContext<Unit, ApplicationCall>.(LOCATION) -> Unit
+    noinline body: suspend RoutingContext.(LOCATION) -> Unit
 ): Route {
     application.swaggerUi.apply {
         metadata.apply<LOCATION, Unit>(HttpMethod.Delete)

@@ -5,7 +5,7 @@ import de.nielsfalk.ktor.swagger.Metadata
 import de.nielsfalk.ktor.swagger.toList
 import de.nielsfalk.ktor.swagger.version.v3.Example
 import io.ktor.http.HttpMethod
-import io.ktor.server.locations.Location
+import io.ktor.resources.Resource
 
 typealias ModelName = String
 typealias PropertyName = String
@@ -52,7 +52,7 @@ interface OperationCreator {
         metadata: Metadata,
         responses: Map<HttpStatus, ResponseBase>,
         parameters: List<ParameterBase>,
-        location: Location,
+        location: Resource,
         group: Group?,
         method: HttpMethod,
         examples: Map<String, Example>,

@@ -7,11 +7,11 @@ import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
 import io.ktor.http.ContentType
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.Locations
+import io.ktor.resources.Resource
+import io.ktor.server.resources.Resources
 import io.ktor.server.testing.testApplication
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.BeforeEach
 import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
 import de.nielsfalk.ktor.swagger.version.v2.Parameter as ParameterV2
 import de.nielsfalk.ktor.swagger.version.v2.Response as ResponseV2
@@ -66,7 +66,7 @@ data class GenericModel<T, U>(
 const val toysLocation = "/toys/{id}"
 
 @Group("toy")
-@Location(toysLocation)
+@Resource(toysLocation)
 class toy(
     val id: Int,
     @Ignore
@@ -75,10 +75,10 @@ class toy(
 
 const val toyLocation = "/toys"
 
-@Location(toyLocation)
+@Resource(toyLocation)
 class toys
 
-@Location("/withParameter")
+@Resource("/withParameter")
 class withParameter
 
 class Header(
@@ -93,10 +93,10 @@ class SwaggerTest {
     private lateinit var swagger: Swagger
     private lateinit var openapi: OpenApi
 
-    @Before
+    @BeforeEach
     fun setUp() {
         testApplication {
-            install(Locations)
+            install(Resources)
             install(SwaggerSupport) {
                 swagger = Swagger()
                 openApi = OpenApi()

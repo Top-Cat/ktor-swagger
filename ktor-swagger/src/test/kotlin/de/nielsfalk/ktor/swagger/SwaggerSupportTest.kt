@@ -6,12 +6,12 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.resources.Resource
 import io.ktor.serialization.gson.GsonConverter
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.Locations
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.resources.Resources
 import io.ktor.server.testing.testApplication
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class SwaggerSupportTest {
     @Test
@@ -74,7 +74,7 @@ class SwaggerSupportTest {
         }.bodyAsText().should.contain("\"swagger\":\"2.0\"")
     }
 
-    @Location("/model")
+    @Resource("/model")
     private class modelRoute
 
     private class Model(val value: String)
@@ -91,7 +91,7 @@ class SwaggerSupportTest {
                 definitions["Model"] = mapOf("type" to "object")
             }
         }
-        install(Locations)
+        install(Resources)
 
         routing {
             put<modelRoute, Model>(noReflectionBody()) { _, _ -> }

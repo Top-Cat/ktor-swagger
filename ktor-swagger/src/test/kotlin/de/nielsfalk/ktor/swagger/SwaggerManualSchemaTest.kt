@@ -5,12 +5,14 @@ import de.nielsfalk.ktor.swagger.version.shared.ModelOrModelReference
 import de.nielsfalk.ktor.swagger.version.shared.ParameterInputType
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.Locations
+import io.ktor.resources.Resource
+import io.ktor.server.resources.Resources
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.Routing
 import io.ktor.server.testing.testApplication
-import io.ktor.util.KtorDsl
-import org.junit.Test
+import io.ktor.utils.io.KtorDsl
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
 import de.nielsfalk.ktor.swagger.version.v2.Parameter as ParameterV2
 import de.nielsfalk.ktor.swagger.version.v2.Response as ResponseV2
@@ -19,7 +21,7 @@ import de.nielsfalk.ktor.swagger.version.v3.Response as ResponseV3
 
 const val rectanglesLocation = "/rectangles"
 
-@Location(rectanglesLocation)
+@Resource(rectanglesLocation)
 class rectangles
 
 const val ref = "${'$'}ref"
@@ -60,9 +62,9 @@ class SwaggerManualSchemaTest {
     private lateinit var openApi: OpenApi
 
     @KtorDsl
-    private fun applicationCustomRoute(configuration: Routing.() -> Unit) {
+    private fun applicationCustomRoute(configuration: Route.() -> Unit) {
         testApplication {
-            install(Locations)
+            install(Resources)
             install(SwaggerSupport) {
                 swagger = Swagger().apply {
                     definitions["size"] = sizeSchemaMap
@@ -175,17 +177,21 @@ class SwaggerManualSchemaTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun `body in get throws exception`() {
-        applicationCustomRoute {
-            get<rectangles>("Get All".noReflectionBody()) {}
+        assertThrows<IllegalArgumentException> {
+            applicationCustomRoute {
+                get<rectangles>("Get All".noReflectionBody()) {}
+            }
         }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun `body in delete throws exception`() {
-        applicationCustomRoute {
-            delete<rectangles>("Delete All".noReflectionBody()) {}
+        assertThrows<IllegalArgumentException> {
+            applicationCustomRoute {
+                delete<rectangles>("Delete All".noReflectionBody()) {}
+            }
         }
     }
 }

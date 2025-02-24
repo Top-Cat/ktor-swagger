@@ -3,18 +3,19 @@ package de.nielsfalk.ktor.swagger
 import com.winterbe.expekt.should
 import de.nielsfalk.ktor.swagger.version.v3.OpenApi
 import io.ktor.http.ContentType
-import io.ktor.server.locations.Locations
+import io.ktor.server.resources.Resources
+import io.ktor.server.routing.application
 import io.ktor.server.testing.testApplication
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class SecurityTest {
     private lateinit var openapi: OpenApi
 
-    @Before
+    @BeforeEach
     fun setUp() {
         testApplication {
-            install(Locations)
+            install(Resources)
             install(SwaggerSupport) {
                 openApi = OpenApi().apply {
                     this.security = listOf(mapOf("basic" to listOf()))

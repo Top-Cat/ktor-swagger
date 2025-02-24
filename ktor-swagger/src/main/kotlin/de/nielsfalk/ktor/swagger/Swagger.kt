@@ -19,6 +19,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.plugin
 import io.ktor.util.reflect.TypeInfo
+import io.ktor.util.reflect.reifiedType
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
@@ -35,7 +36,10 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 
-typealias SwaggerTypeInfo = TypeInfo
+data class SwaggerTypeInfo(
+    val type: KClass<*>,
+    val reifiedType: Type
+)
 
 /**
  * Gets the [Application.swaggerUi] feature
@@ -63,7 +67,7 @@ internal class SpecVariation(
     fun <T, R> KProperty1<T, R>.toParameter(
         path: String,
         inputType: ParameterInputType = if (path.contains("{$name}")) ParameterInputType.path else query
-    ): Pair<ParameterBase, Collection<TypeInfo>> {
+    ): Pair<ParameterBase, Collection<SwaggerTypeInfo>> {
         val schemaAnnotation = annotations.firstOrNull { it is Schema } as? Schema
         val required = !annotations.any { it is DefaultValue } && !returnType.isMarkedNullable
         val defaultValue = annotations.firstOrNull { it is DefaultValue } as? DefaultValue
@@ -122,10 +126,10 @@ internal class SpecVariation(
                 )
         }
 
-    fun <T, R> KProperty1<T, R>.toModelProperty(reifiedType: Type? = null): Pair<Property, Collection<TypeInfo>> =
+    fun <T, R> KProperty1<T, R>.toModelProperty(reifiedType: Type? = null): Pair<Property, Collection<SwaggerTypeInfo>> =
         returnType.toModelProperty(reifiedType)
 
-    fun KType.toModelProperty(reifiedType: Type?): Pair<Property, Collection<TypeInfo>> =
+    fun KType.toModelProperty(reifiedType: Type?): Pair<Property, Collection<SwaggerTypeInfo>> =
         resolveTypeInfo(reifiedType).let { typeInfo ->
             val type = typeInfo?.type ?: classifier as KClass<*>
             type.toModelProperty(this, typeInfo?.reifiedType as? ParameterizedType)
@@ -138,7 +142,7 @@ internal class SpecVariation(
     private fun KClass<*>.toModelProperty(
         returnType: KType? = null,
         reifiedType: ParameterizedType? = null
-    ): Pair<Property, Collection<TypeInfo>> {
+    ): Pair<Property, Collection<SwaggerTypeInfo>> {
         return propertyTypes[qualifiedName?.removeSuffix("?")]
             ?: if (returnType != null && isCollectionType) {
                 val returnTypeClassifier = returnType.classifier
@@ -218,7 +222,7 @@ internal class SpecVariation(
             }
     }
 
-    fun createModelData(typeInfo: TypeInfo): ModelDataWithDiscoveredTypeInfo {
+    fun createModelData(typeInfo: SwaggerTypeInfo): ModelDataWithDiscoveredTypeInfo {
         return if (typeInfo.type.isSubclassOf(Collection::class)) {
             val concreteType = (typeInfo.reifiedType as ParameterizedType).actualTypeArguments.first()
             val subTypeInfo = SwaggerTypeInfo(concreteType.rawKotlinKClass(), concreteType)
@@ -230,8 +234,8 @@ internal class SpecVariation(
         }
     }
 
-    private fun collectModelProperties(typeInfo: TypeInfo): Pair<Map<PropertyName, Property>, MutableList<TypeInfo>> {
-        val collectedClassesToRegister = mutableListOf<TypeInfo>()
+    private fun collectModelProperties(typeInfo: SwaggerTypeInfo): Pair<Map<PropertyName, Property>, MutableList<SwaggerTypeInfo>> {
+        val collectedClassesToRegister = mutableListOf<SwaggerTypeInfo>()
         val properties = typeInfo.type.memberProperties.mapNotNull {
             if (it.findAnnotation<Ignore>() != null) return@mapNotNull null
             val propertiesWithCollected = it.toModelProperty(typeInfo.reifiedType)
@@ -249,7 +253,7 @@ internal class SpecVariation(
             type = null
         )
 
-    private fun TypeInfo.referenceProperty(): Property =
+    private fun SwaggerTypeInfo.referenceProperty(): Property =
         Property(
             `$ref` = modelRoot + modelName(),
             description = modelName(),
@@ -257,13 +261,13 @@ internal class SpecVariation(
         )
 }
 
-fun TypeInfo.responseDescription(): String = modelName()
+fun SwaggerTypeInfo.responseDescription(): String = modelName()
 
 /**
  * Holds the [ModelData] that was created from a given [TypeInfo] along with any
  * additional [TypeInfo] that were encountered and must be converted to [ModelData].
  */
-typealias ModelDataWithDiscoveredTypeInfo = Pair<ModelData, Collection<TypeInfo>>
+typealias ModelDataWithDiscoveredTypeInfo = Pair<ModelData, Collection<SwaggerTypeInfo>>
 
 sealed class ModelData
 class ObjectModel(val properties: Map<PropertyName, Property>) : ModelData()
@@ -282,12 +286,12 @@ private val propertyTypes = mapOf(
     kotlinx.datetime.Instant::class to Property("string", "date-time"),
     kotlinx.datetime.LocalDateTime::class to Property("string", "date-time"),
     kotlinx.datetime.LocalDate::class to Property("string", "date")
-).mapKeys { it.key.qualifiedName }.mapValues { it.value to emptyList<TypeInfo>() }
+).mapKeys { it.key.qualifiedName }.mapValues { it.value to emptyList<SwaggerTypeInfo>() }
 
-internal fun <T, R> KProperty1<T, R>.returnTypeInfo(reifiedType: Type?): TypeInfo =
+internal fun <T, R> KProperty1<T, R>.returnTypeInfo(reifiedType: Type?): SwaggerTypeInfo =
     returnType.resolveTypeInfo(reifiedType)!!
 
-internal fun KType.resolveTypeInfo(reifiedType: Type?): TypeInfo? {
+internal fun KType.resolveTypeInfo(reifiedType: Type?): SwaggerTypeInfo? {
     val classifierLocal = classifier
     return when (classifierLocal) {
         is KTypeParameter -> {
@@ -321,10 +325,10 @@ private val KClass<*>?.isCollectionType
 private val KClassifier?.isCollectionType
     get() = (this as? KClass<*>).isCollectionType
 
-private val emptyTypeInfoList = emptyList<TypeInfo>()
+private val emptyTypeInfoList = emptyList<SwaggerTypeInfo>()
 
 @PublishedApi
-internal fun TypeInfo.modelName(): ModelName {
+internal fun SwaggerTypeInfo.modelName(): ModelName {
     fun KClass<*>.modelName(): ModelName = simpleName ?: toString()
 
     return if (type.java == reifiedType) {

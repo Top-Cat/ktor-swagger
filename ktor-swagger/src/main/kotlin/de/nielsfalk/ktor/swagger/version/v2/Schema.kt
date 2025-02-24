@@ -4,6 +4,7 @@ import de.nielsfalk.ktor.swagger.CustomContentTypeResponse
 import de.nielsfalk.ktor.swagger.HttpCodeResponse
 import de.nielsfalk.ktor.swagger.JsonResponseFromReflection
 import de.nielsfalk.ktor.swagger.JsonResponseSchema
+import de.nielsfalk.ktor.swagger.SwaggerTypeInfo
 import de.nielsfalk.ktor.swagger.modelName
 import de.nielsfalk.ktor.swagger.responseDescription
 import de.nielsfalk.ktor.swagger.version.shared.CommonBase
@@ -65,7 +66,7 @@ class Response(
 
         fun create(
             httpStatusCode: HttpStatusCode,
-            typeInfo: TypeInfo,
+            typeInfo: SwaggerTypeInfo,
             description: String?
         ): Response {
             return Response(
