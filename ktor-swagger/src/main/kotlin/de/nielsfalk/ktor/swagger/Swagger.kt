@@ -35,6 +35,7 @@ import kotlin.reflect.KTypeParameter
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.javaType
 
 data class SwaggerTypeInfo(
     val type: KClass<*>,
@@ -127,7 +128,7 @@ internal class SpecVariation(
         }
 
     fun <T, R> KProperty1<T, R>.toModelProperty(reifiedType: Type? = null): Pair<Property, Collection<SwaggerTypeInfo>> =
-        returnType.toModelProperty(reifiedType)
+        returnType.toModelProperty(reifiedType ?: returnType.javaType)
 
     fun KType.toModelProperty(reifiedType: Type?): Pair<Property, Collection<SwaggerTypeInfo>> =
         resolveTypeInfo(reifiedType).let { typeInfo ->
