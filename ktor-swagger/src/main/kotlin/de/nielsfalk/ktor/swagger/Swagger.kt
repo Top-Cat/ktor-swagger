@@ -19,7 +19,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.plugin
 import io.ktor.util.reflect.TypeInfo
-import io.ktor.util.reflect.reifiedType
+import io.ktor.util.reflect.instanceOf
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
@@ -69,9 +69,11 @@ internal class SpecVariation(
         path: String,
         inputType: ParameterInputType = if (path.contains("{$name}")) ParameterInputType.path else query
     ): Pair<ParameterBase, Collection<SwaggerTypeInfo>> {
-        val schemaAnnotation = annotations.firstOrNull { it is Schema } as? Schema
-        val required = !annotations.any { it is DefaultValue } && !returnType.isMarkedNullable
-        val defaultValue = annotations.firstOrNull { it is DefaultValue } as? DefaultValue
+        val schemaAnnotation = annotations.filterIsInstance<Schema>().firstOrNull()
+        val dvFiltered = annotations.filterIsInstance<DefaultValue>()
+        val required = !dvFiltered.any() && !returnType.isMarkedNullable
+        val defaultValue = dvFiltered.firstOrNull()
+        val modelType = annotations.filterIsInstance<ModelClass>().firstOrNull()
         fun Property.determineDescription() =
             annotations.mapNotNull { it as? Description }.firstOrNull()?.description ?: description ?: name
         return if (schemaAnnotation != null) {
@@ -86,6 +88,18 @@ internal class SpecVariation(
                 required = required,
                 default = defaultValue?.value
             ) to emptyTypeInfoList
+        } else if (modelType != null) {
+            //modelType?.clazz?.java?.toKType()?.javaType
+            modelType.clazz.toModelProperty().let {
+                parameterCreator.create(
+                    it.first,
+                    name,
+                    inputType,
+                    it.first.determineDescription(),
+                    required = required,
+                    default = defaultValue?.value
+                ) to it.second
+            }
         } else {
             toModelProperty().let {
                 parameterCreator.create(

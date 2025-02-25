@@ -10,6 +10,7 @@ import io.ktor.http.ContentType
 import io.ktor.resources.Resource
 import io.ktor.server.resources.Resources
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.Serializable
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import de.nielsfalk.ktor.swagger.version.v2.Operation as OperationV2
@@ -65,12 +66,19 @@ data class GenericModel<T, U>(
 
 const val toysLocation = "/toys/{id}"
 
+enum class TestEnum {
+    A, B, C
+}
+@Serializable
+data class Box<T>(val value: T)
+
 @Group("toy")
 @Resource(toysLocation)
 class toy(
     val id: Int,
     @Ignore
-    val ignoredProperty: Int
+    val ignoredProperty: Int,
+    @ModelClass(TestEnum::class) val boxedEnum: Box<TestEnum>
 )
 
 const val toyLocation = "/toys"

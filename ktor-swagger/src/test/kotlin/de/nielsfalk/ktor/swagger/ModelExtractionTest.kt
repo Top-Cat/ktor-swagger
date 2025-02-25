@@ -3,9 +3,6 @@ package de.nielsfalk.ktor.swagger
 import com.winterbe.expekt.should
 import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.v2.Parameter
-import io.ktor.util.reflect.TypeInfo
-import io.ktor.util.reflect.reifiedType
-import io.ktor.util.reflect.typeInfo
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate

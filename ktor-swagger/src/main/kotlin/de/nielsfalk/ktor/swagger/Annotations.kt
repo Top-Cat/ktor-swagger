@@ -1,5 +1,7 @@
 package de.nielsfalk.ktor.swagger
 
+import kotlin.reflect.KClass
+
 @Target(AnnotationTarget.PROPERTY)
 annotation class DefaultValue(
     val value: String
@@ -12,3 +14,8 @@ annotation class Description(
 
 @Target(AnnotationTarget.PROPERTY)
 annotation class Ignore
+
+@Target(AnnotationTarget.PROPERTY)
+annotation class ModelClass(
+    val clazz: KClass<*>
+)
