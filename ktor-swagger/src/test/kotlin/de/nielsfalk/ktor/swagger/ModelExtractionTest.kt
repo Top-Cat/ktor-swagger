@@ -3,6 +3,8 @@ package de.nielsfalk.ktor.swagger
 import com.winterbe.expekt.should
 import de.nielsfalk.ktor.swagger.version.shared.Property
 import de.nielsfalk.ktor.swagger.version.v2.Parameter
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
@@ -25,15 +27,15 @@ class ModelExtractionTest {
     private inline fun <reified T> createAndExtractObjectModelData() =
         createModelData(sTypeInfo<T>()).first as ObjectModel
 
+    @Serializable
     enum class EnumClass {
-        first, second, third
+        first, second, @SerialName("third") last
     }
 
     class EnumModel(val enumValue: EnumClass?)
 
     @Test
     fun `enum Property`() {
-
         val property = createAndExtractObjectModelData<EnumModel>()
             .properties["enumValue"] as Property
 

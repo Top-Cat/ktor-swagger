@@ -19,7 +19,8 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.plugin
 import io.ktor.util.reflect.TypeInfo
-import io.ktor.util.reflect.instanceOf
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
@@ -224,8 +225,9 @@ internal class SpecVariation(
                 }
             } else if (java.isEnum) {
                 val enumConstants = (this).java.enumConstants
+                val serial = serializer(this.java)
                 Property(
-                    enum = enumConstants.map { (it as Enum<*>).name.removePrefix("_") },
+                    enum = enumConstants.map { Json.encodeToString(serial, it).let { name -> name.substring(1..name.length-2) } },
                     type = "string"
                 ) to emptyTypeInfoList
             } else {

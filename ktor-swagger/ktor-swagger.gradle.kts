@@ -7,4 +7,5 @@ dependencies {
      */
     val swaggerUiVersion = "5.18.2"
     implementation(group = "org.webjars", name = "swagger-ui", version = swaggerUiVersion)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 }
